@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Markdown → PDF 変換ツール</title>
+
+  <!-- ❶ 依存ライブラリ (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      margin: 2rem auto;
+      max-width: 900px;
+      padding: 0 1rem;
+    }
+    h1 { text-align: center; }
+    #controls { margin-bottom: 1.5rem; }
+    #preview { border: 1px solid #ccc; padding: 2rem; }
+    #download { margin-left: .75rem; }
+  </style>
+</head>
+
+<body>
+  <h1>Markdown → PDF 変換ツール</h1>
+  <div id="controls">
+    <input id="fileInput" type="file" accept=".md, text/markdown" />
+    <button id="download" disabled>PDF を保存</button>
+  </div>
+
+  <!-- ❷ Markdown を HTML として描画する領域 -->
+  <div id="preview"></div>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const downloadBtn = document.getElementById("download");
+    const preview    = document.getElementById("preview");
+
+    let currentFilename = "document";
+
+    // ❸ .md ファイルを読み込んで HTML に変換
+    fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      currentFilename = file.name.replace(/\.[^/.]+$/, ""); // 拡張子除去
+      const mdText = await file.text();
+      preview.innerHTML = marked.parse(mdText);
+
+      downloadBtn.disabled = false;        // PDF ボタンを有効化
+    });
+
+    // ❹ プレビュー領域を PDF に書き出し
+    downloadBtn.addEventListener("click", () => {
+      const options = {
+        margin:      10,                 // mm
+        filename:    `${currentFilename}.pdf`,
+        image:       { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF:       { unit: "mm", format: "a4", orientation: "portrait" }
+      };
+
+      html2pdf().from(preview).set(options).save();
+    });
+  </script>
+</body>
+</html>
