@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Markdown → PDF 変換ツール</title>
 
-  <!-- ❶ 依存ライブラリ (CDN) -->
+  <!-- 依存ライブラリ -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -17,7 +17,15 @@
     }
     h1 { text-align: center; }
     #controls { margin-bottom: 1.5rem; }
-    #preview { border: 1px solid #ccc; padding: 2rem; }
+
+    /* ★ 幅を A4 印字領域（左右 10 mm 余白）内に収める */
+    #preview {
+      border: 1px solid #ccc;
+      padding: 2rem;
+      max-width: 180mm;      /* ＝ 210 mm − 10 mm×2 − 余裕 */
+      box-sizing: border-box;/* パディング＆罫線込みで計算 */
+      margin: 0 auto;        /* 中央寄せ */
+    }
     #download { margin-left: .75rem; }
   </style>
 </head>
@@ -29,38 +37,34 @@
     <button id="download" disabled>PDF を保存</button>
   </div>
 
-  <!-- ❷ Markdown を HTML として描画する領域 -->
+  <!-- プレビュー領域 -->
   <div id="preview"></div>
 
   <script>
-    const fileInput = document.getElementById("fileInput");
+    const fileInput   = document.getElementById("fileInput");
     const downloadBtn = document.getElementById("download");
-    const preview    = document.getElementById("preview");
-
+    const preview     = document.getElementById("preview");
     let currentFilename = "document";
 
-    // ❸ .md ファイルを読み込んで HTML に変換
+    // .md 読み込み → HTML 変換
     fileInput.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-
-      currentFilename = file.name.replace(/\.[^/.]+$/, ""); // 拡張子除去
+      currentFilename = file.name.replace(/\.[^/.]+$/, "");
       const mdText = await file.text();
       preview.innerHTML = marked.parse(mdText);
-
-      downloadBtn.disabled = false;        // PDF ボタンを有効化
+      downloadBtn.disabled = false;
     });
 
-    // ❹ プレビュー領域を PDF に書き出し
+    // PDF 生成
     downloadBtn.addEventListener("click", () => {
       const options = {
         margin:      10,                 // mm
         filename:    `${currentFilename}.pdf`,
         image:       { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: { scale: 2 },       // 高解像度
         jsPDF:       { unit: "mm", format: "a4", orientation: "portrait" }
       };
-
       html2pdf().from(preview).set(options).save();
     });
   </script>
