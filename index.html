@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Markdown → PDF 変換ツール</title>
+
+  <!-- 依存ライブラリ -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      margin: 2rem auto;
+      max-width: 900px;
+      padding: 0 1rem;
+    }
+    h1 { text-align: center; }
+    #controls { margin-bottom: 1.5rem; }
+
+    #preview {
+      border: 1px solid #ccc;
+      padding: 2rem;
+      max-width: 180mm;
+      box-sizing: border-box;
+      margin: 0 auto;
+    }
+
+    #download { margin-left: .75rem; }
+
+    /* ドラッグエリアのスタイル */
+    #dropZone {
+      border: 2px dashed #aaa;
+      padding: 1.5rem;
+      text-align: center;
+      color: #666;
+      margin-top: 1rem;
+    }
+
+    #dropZone.dragover {
+      border-color: #333;
+      background-color: #f9f9f9;
+      color: #000;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Markdown → PDF 変換ツール</h1>
+  <div id="controls">
+    <input id="fileInput" type="file" accept=".md, text/markdown" />
+    <button id="download" disabled>PDF を保存</button>
+    <div id="dropZone">ここにMarkdownファイルをドラッグ＆ドロップ</div>
+  </div>
+
+  <div id="preview"></div>
+
+  <script>
+    const fileInput   = document.getElementById("fileInput");
+    const downloadBtn = document.getElementById("download");
+    const preview     = document.getElementById("preview");
+    const dropZone    = document.getElementById("dropZone");
+    let currentFilename = "document";
+
+    async function handleFile(file) {
+      if (!file || !file.name.match(/\.(md|markdown)$/i)) return;
+      currentFilename = file.name.replace(/\.[^/.]+$/, "");
+      const mdText = await file.text();
+      preview.innerHTML = marked.parse(mdText);
+      downloadBtn.disabled = false;
+    }
+
+    fileInput.addEventListener("change", (e) => {
+      handleFile(e.target.files[0]);
+    });
+
+    // ドラッグ＆ドロップ対応
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      handleFile(file);
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      const options = {
+        margin:      10,
+        filename:    `${currentFilename}.pdf`,
+        image:       { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF:       { unit: "mm", format: "a4", orientation: "portrait" }
+      };
+      html2pdf().from(preview).set(options).save();
+    });
+  </script>
+</body>
+</html>
