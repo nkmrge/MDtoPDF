@@ -4,33 +4,40 @@
   <meta charset="UTF-8" />
   <title>Markdown → PDF 変換ツール</title>
 
+  <!-- ライブラリ -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     body {
       font-family: "Yu Gothic", sans-serif;
-      margin: 1rem auto;
-      padding: 0 1rem;
+      margin: 0;
+      padding: 0;
       font-size: 10px;
-      max-width: 900px;
     }
 
     h1 {
       text-align: center;
+      margin: 1rem 0;
     }
 
     #controls {
-      margin-bottom: 1rem;
+      max-width: 900px;
+      margin: 1rem auto;
+      padding: 0 1rem;
     }
 
     #preview {
       width: 190mm;
-      padding: 1rem;
-      margin: 1rem auto;
+      padding: 0;
+      margin: 0 auto;
       position: relative;
       font-size: inherit;
       font-family: inherit;
+    }
+
+    #preview.no-guide::before {
+      display: none !important;
     }
 
     #download {
@@ -66,7 +73,7 @@
       margin-right: 0.5rem;
     }
 
-    /* プレビュー用 A4 枠ガイド */
+    /* A4ガイド（画面表示時のみ） */
     @media screen {
       #preview::before {
         content: "";
@@ -82,19 +89,19 @@
       }
     }
 
-    /* PDF出力時の枠・余白非表示 */
+    /* 印刷・PDF時にはガイド線と余白を消す */
     @media print {
       #preview::before {
         display: none;
       }
       #preview {
+        margin: 0 !important;
         padding: 0 !important;
-        margin: 0 auto !important;
         border: none !important;
       }
     }
 
-    /* テーブル装飾 */
+    /* テーブル装飾（グレースケール + ストライプ） */
     #preview table {
       width: 100%;
       border-collapse: collapse;
@@ -108,8 +115,7 @@
       color: #000;
     }
 
-    #preview th,
-    #preview td {
+    #preview th, #preview td {
       border: 1px solid #bbb;
       padding: 0.5em 0.75em;
       text-align: left;
@@ -120,14 +126,8 @@
     }
 
     /* 改ページ防止 */
-    #preview h1,
-    #preview h2,
-    #preview h3,
-    #preview p,
-    #preview table,
-    #preview ul,
-    #preview ol,
-    #preview blockquote {
+    #preview h1, #preview h2, #preview h3,
+    #preview p, #preview table, #preview ul, #preview ol, #preview blockquote {
       break-inside: avoid;
       page-break-inside: avoid;
     }
@@ -186,4 +186,40 @@
       renderMarkdown(mdText);
     }
 
-    fileInput.addEventListener("change", e => handleFile(e.target.files[0]))
+    fileInput.addEventListener("change", e => handleFile(e.target.files[0]));
+    dropZone.addEventListener("dragover", e => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone.addEventListener("drop", e => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      handleFile(e.dataTransfer.files[0]);
+    });
+
+    markdownInput.addEventListener("input", () => {
+      currentFilename = "document";
+      renderMarkdown(markdownInput.value);
+    });
+
+    fontSizeInput.addEventListener("input", applyStyles);
+    fontFamilySelect.addEventListener("change", applyStyles);
+
+    downloadBtn.addEventListener("click", () => {
+      applyStyles();
+      preview.classList.add("no-guide"); // ガイド線を一時非表示
+
+      html2pdf().from(preview).set({
+        margin: 5,
+        filename: `${currentFilename}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+      }).save().then(() => {
+        preview.classList.remove("no-guide"); // 出力後に戻す
+      });
+    });
+  </script>
+</body>
+</html>
