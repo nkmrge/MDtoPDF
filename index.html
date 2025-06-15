@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Markdown → PDF 変換ツール</title>
 
-  <!-- ライブラリ -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -12,9 +11,9 @@
     body {
       font-family: "Yu Gothic", sans-serif;
       margin: 1rem auto;
-      max-width: 900px;
       padding: 0 1rem;
       font-size: 10px;
+      max-width: 900px;
     }
 
     h1 {
@@ -26,16 +25,16 @@
     }
 
     #preview {
+      width: 190mm;
       padding: 1rem;
-      width: 190mm;              /* 印刷可能最大幅（A4は210mm） */
-      max-width: 190mm;
       margin: 1rem auto;
-      box-sizing: border-box;
       position: relative;
+      font-size: inherit;
+      font-family: inherit;
     }
 
     #download {
-      margin-left: .75rem;
+      margin-left: 0.75rem;
     }
 
     #dropZone {
@@ -58,8 +57,8 @@
       font-family: monospace;
       margin-top: 1rem;
       padding: 1rem;
-      box-sizing: border-box;
       resize: vertical;
+      box-sizing: border-box;
     }
 
     label {
@@ -67,36 +66,35 @@
       margin-right: 0.5rem;
     }
 
-    /* プレビュー用 A4 ガイド（画面上のみ） */
+    /* プレビュー用 A4 枠ガイド */
     @media screen {
       #preview::before {
         content: "";
-        display: block;
-        border: 1px dashed #ccc;
         position: absolute;
         top: 0;
         left: 50%;
         transform: translateX(-50%);
         width: 180mm;
         height: 100%;
+        border: 1px dashed #ccc;
         pointer-events: none;
         z-index: 0;
       }
     }
 
-    /* PDF出力用の調整：プレビュー枠を消す */
+    /* PDF出力時の枠・余白非表示 */
     @media print {
       #preview::before {
         display: none;
       }
       #preview {
-        border: none !important;
         padding: 0 !important;
         margin: 0 auto !important;
+        border: none !important;
       }
     }
 
-    /* テーブル装飾：グレースケール + ストライプ */
+    /* テーブル装飾 */
     #preview table {
       width: 100%;
       border-collapse: collapse;
@@ -110,7 +108,8 @@
       color: #000;
     }
 
-    #preview th, #preview td {
+    #preview th,
+    #preview td {
       border: 1px solid #bbb;
       padding: 0.5em 0.75em;
       text-align: left;
@@ -121,8 +120,14 @@
     }
 
     /* 改ページ防止 */
-    #preview h1, #preview h2, #preview h3,
-    #preview p, #preview table, #preview ul, #preview ol, #preview blockquote {
+    #preview h1,
+    #preview h2,
+    #preview h3,
+    #preview p,
+    #preview table,
+    #preview ul,
+    #preview ol,
+    #preview blockquote {
       break-inside: avoid;
       page-break-inside: avoid;
     }
@@ -163,16 +168,14 @@
     let currentFilename = "document";
 
     function applyStyles() {
-      const fontSize = `${fontSizeInput.value}px`;
-      const fontFamily = fontFamilySelect.value;
-      preview.style.fontSize = fontSize;
-      preview.style.fontFamily = fontFamily;
+      preview.style.fontSize = `${fontSizeInput.value}px`;
+      preview.style.fontFamily = fontFamilySelect.value;
     }
 
     function renderMarkdown(mdText) {
       preview.innerHTML = marked.parse(mdText);
-      downloadBtn.disabled = false;
       applyStyles();
+      downloadBtn.disabled = false;
     }
 
     async function handleFile(file) {
@@ -183,45 +186,4 @@
       renderMarkdown(mdText);
     }
 
-    fileInput.addEventListener("change", (e) => {
-      handleFile(e.target.files[0]);
-    });
-
-    dropZone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dropZone.classList.add("dragover");
-    });
-
-    dropZone.addEventListener("dragleave", () => {
-      dropZone.classList.remove("dragover");
-    });
-
-    dropZone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropZone.classList.remove("dragover");
-      const file = e.dataTransfer.files[0];
-      handleFile(file);
-    });
-
-    markdownInput.addEventListener("input", () => {
-      currentFilename = "document";
-      renderMarkdown(markdownInput.value);
-    });
-
-    fontSizeInput.addEventListener("input", applyStyles);
-    fontFamilySelect.addEventListener("change", applyStyles);
-
-    downloadBtn.addEventListener("click", () => {
-      applyStyles(); // 念のため適用
-      const options = {
-        margin:      5,
-        filename:    `${currentFilename}.pdf`,
-        image:       { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF:       { unit: "mm", format: "a4", orientation: "portrait" }
-      };
-      html2pdf().from(preview).set(options).save();
-    });
-  </script>
-</body>
-</html>
+    fileInput.addEventListener("change", e => handleFile(e.target.files[0]))
