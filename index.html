@@ -17,7 +17,7 @@
     }
 
     body {
-      margin-top: 3mm; /* ✅ 上部マージン3mm */
+      margin-top: 3mm;
     }
 
     h1 {
@@ -78,7 +78,7 @@
       margin-right: 0.5rem;
     }
 
-    /* ✅ プレビューの枠線を画面表示時のみ実線で表示 */
+    /* プレビュー枠（画面上のみ表示） */
     @media screen {
       #preview::before {
         content: "";
@@ -88,13 +88,13 @@
         transform: translateX(-50%);
         width: 190mm;
         height: 100%;
-        border: 1px solid #ccc; /* ✅ 実線に変更 */
+        border: 1px solid #ccc;
         pointer-events: none;
         z-index: 0;
       }
     }
 
-    /* ✅ PDF出力時は枠線と余白を消す */
+    /* PDF出力時には非表示に */
     @media print {
       #preview::before {
         display: none;
@@ -106,7 +106,7 @@
       }
     }
 
-    /* ✅ テーブル装飾 */
+    /* テーブル装飾 */
     #preview table {
       width: 100%;
       border-collapse: collapse;
@@ -130,7 +130,7 @@
       background-color: #f5f5f5;
     }
 
-    /* ✅ 改ページ防止 */
+    /* 改ページ防止 */
     #preview h1, #preview h2, #preview h3,
     #preview p, #preview table, #preview ul, #preview ol, #preview blockquote {
       break-inside: avoid;
@@ -155,7 +155,7 @@
       <option value="YuGothic, 'Hiragino Kaku Gothic Pro', sans-serif" selected>ゴシック</option>
     </select>
 
-    <div id="dropZone">ここにMarkdownファイルをドラッグ＆ドロップ</div>
+    <div id="dropZone">ここにマークダウン.mdファイルをドラッグ＆ドロップ</div>
     <textarea id="markdownInput" placeholder="ここにMarkdownを直接入力できます"></textarea>
   </div>
 
@@ -192,11 +192,14 @@
     }
 
     fileInput.addEventListener("change", e => handleFile(e.target.files[0]));
+
     dropZone.addEventListener("dragover", e => {
       e.preventDefault();
       dropZone.classList.add("dragover");
     });
+
     dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+
     dropZone.addEventListener("drop", e => {
       e.preventDefault();
       dropZone.classList.remove("dragover");
@@ -213,32 +216,32 @@
 
     downloadBtn.addEventListener("click", () => {
       applyStyles();
-      preview.classList.add("no-guide"); // ガイド線を一時非表示
+      preview.classList.add("no-guide");
 
       html2pdf()
         .from(preview)
-　　　　　.set({
-       　 margin: 5,
-        　filename: `${currentFilename}.pdf`,
-        　image: { type: "jpeg", quality: 0.98 },
-        　html2canvas: { scale: 2 },
-        　jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-    　　 })
-　　　　　.toPdf()
-　　　　　.get('pdf')
-　　　　　.then(pdf => {
-　　　　　　const totalPages = pdf.internal.getNumberOfPages();
-　　　　　　for (let i = 1; i <= totalPages; i++) {
-　　　　　　pdf.setPage(i);
-　　　　　　pdf.setFontSize(8);
-　　　　　　pdf.setTextColor(100);
-　　　　　　pdf.text(`ページ ${i} / ${totalPages}`, 105, 290, { align: 'center' }); // 下中央
-　　　　　 }
-　　　　　})
-　　　　　.save()
-　　　　　.finally(() => {
-　　　　　　preview.classList.remove("no-guide");
-　　　　　});  
+        .set({
+          margin: 5,
+          filename: `${currentFilename}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        })
+        .toPdf()
+        .get('pdf')
+        .then(pdf => {
+          const totalPages = pdf.internal.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            pdf.setPage(i);
+            pdf.setFontSize(8);
+            pdf.setTextColor(100);
+            pdf.text(`ページ ${i} / ${totalPages}`, 105, 290, { align: 'center' });
+          }
+        })
+        .save()
+        .finally(() => {
+          preview.classList.remove("no-guide");
+        });
     });
   </script>
 </body>
