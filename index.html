@@ -10,11 +10,11 @@
 
   <style>
     body {
-      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-family: "Yu Gothic", sans-serif;
       margin: 2rem auto;
       max-width: 900px;
       padding: 0 1rem;
-      font-size: 16px; /* デフォルトフォントサイズ */
+      font-size: 16px;
     }
     h1 {
       text-align: center;
@@ -23,7 +23,6 @@
       margin-bottom: 1.5rem;
     }
     #preview {
-      border: 1px solid #ccc;
       padding: 2rem;
       max-width: 180mm;
       box-sizing: border-box;
@@ -67,12 +66,13 @@
     <input id="fileInput" type="file" accept=".md, text/markdown" />
     <button id="download" disabled>PDF を保存</button>
 
-    <label for="fontSizeSelect">フォントサイズ:</label>
-    <select id="fontSizeSelect">
-      <option value="14px">小</option>
-      <option value="16px" selected>中</option>
-      <option value="18px">大</option>
-      <option value="20px">特大</option>
+    <label for="fontSizeInput">フォントサイズ(px):</label>
+    <input id="fontSizeInput" type="number" value="16" min="8" max="72" step="1" style="width: 4em;" />
+
+    <label for="fontFamilySelect">フォント:</label>
+    <select id="fontFamilySelect">
+      <option value="YuMincho, 'Hiragino Mincho Pro', serif">明朝</option>
+      <option value="YuGothic, 'Hiragino Kaku Gothic Pro', sans-serif" selected>ゴシック</option>
     </select>
 
     <div id="dropZone">ここにMarkdownファイルをドラッグ＆ドロップ</div>
@@ -82,18 +82,27 @@
   <div id="preview"></div>
 
   <script>
-    const fileInput     = document.getElementById("fileInput");
-    const downloadBtn   = document.getElementById("download");
-    const preview       = document.getElementById("preview");
-    const dropZone      = document.getElementById("dropZone");
-    const markdownInput = document.getElementById("markdownInput");
-    const fontSizeSelect = document.getElementById("fontSizeSelect");
+    const fileInput       = document.getElementById("fileInput");
+    const downloadBtn     = document.getElementById("download");
+    const preview         = document.getElementById("preview");
+    const dropZone        = document.getElementById("dropZone");
+    const markdownInput   = document.getElementById("markdownInput");
+    const fontSizeInput   = document.getElementById("fontSizeInput");
+    const fontFamilySelect = document.getElementById("fontFamilySelect");
 
     let currentFilename = "document";
+
+    function applyStyles() {
+      const fontSize = `${fontSizeInput.value}px`;
+      const fontFamily = fontFamilySelect.value;
+      preview.style.fontSize = fontSize;
+      preview.style.fontFamily = fontFamily;
+    }
 
     function renderMarkdown(mdText) {
       preview.innerHTML = marked.parse(mdText);
       downloadBtn.disabled = false;
+      applyStyles();
     }
 
     async function handleFile(file) {
@@ -129,18 +138,23 @@
       renderMarkdown(markdownInput.value);
     });
 
-    fontSizeSelect.addEventListener("change", () => {
-      document.body.style.fontSize = fontSizeSelect.value;
+    fontSizeInput.addEventListener("input", () => {
+      applyStyles();
+    });
+
+    fontFamilySelect.addEventListener("change", () => {
+      applyStyles();
     });
 
     downloadBtn.addEventListener("click", () => {
       const options = {
-        margin:      10,
+        margin:      5,
         filename:    `${currentFilename}.pdf`,
         image:       { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF:       { unit: "mm", format: "a4", orientation: "portrait" }
       };
+      applyStyles();
       html2pdf().from(preview).set(options).save();
     });
   </script>
