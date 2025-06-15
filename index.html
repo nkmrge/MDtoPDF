@@ -7,6 +7,16 @@
   <!-- ライブラリ -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    const fontSizeSelect = document.getElementById("fontSizeSelect");
+
+    // 初期フォントサイズ設定
+    document.body.style.fontSize = fontSizeSelect.value;
+
+    fontSizeSelect.addEventListener("change", () => {
+    document.body.style.fontSize = fontSizeSelect.value;
+    });
+  </script>
 
   <style>
     body {
@@ -54,12 +64,21 @@
 <body>
   <h1>Markdown → PDF 変換ツール</h1>
 
-  <div id="controls">
-    <input id="fileInput" type="file" accept=".md, text/markdown" />
-    <button id="download" disabled>PDF を保存</button>
-    <div id="dropZone">ここにMarkdownファイルをドラッグ＆ドロップ</div>
-    <textarea id="markdownInput" placeholder="ここにMarkdownを直接入力できます"></textarea>
-  </div>
+<div id="controls">
+  <input id="fileInput" type="file" accept=".md, text/markdown" />
+  <button id="download" disabled>PDF を保存</button>
+
+  <label for="fontSizeSelect">フォントサイズ:</label>
+  <select id="fontSizeSelect">
+    <option value="14px">小</option>
+    <option value="16px" selected>中</option>
+    <option value="18px">大</option>
+    <option value="20px">特大</option>
+  </select>
+
+  <div id="dropZone">ここにMarkdownファイルをドラッグ＆ドロップ</div>
+  <textarea id="markdownInput" placeholder="ここにMarkdownを直接入力できます"></textarea>
+</div>
 
   <div id="preview"></div>
 
