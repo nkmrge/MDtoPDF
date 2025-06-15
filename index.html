@@ -16,21 +16,27 @@
       padding: 0 1rem;
       font-size: 16px;
     }
+
     h1 {
       text-align: center;
     }
+
     #controls {
       margin-bottom: 1.5rem;
     }
+
     #preview {
       padding: 2rem;
       max-width: 180mm;
       box-sizing: border-box;
       margin: 1rem auto;
+      position: relative; /* ガイド表示に必要 */
     }
+
     #download {
       margin-left: .75rem;
     }
+
     #dropZone {
       border: 2px dashed #aaa;
       padding: 1.5rem;
@@ -38,11 +44,13 @@
       color: #666;
       margin-top: 1rem;
     }
+
     #dropZone.dragover {
       border-color: #333;
       background-color: #f9f9f9;
       color: #000;
     }
+
     textarea {
       width: 100%;
       height: 200px;
@@ -52,9 +60,27 @@
       box-sizing: border-box;
       resize: vertical;
     }
+
     label {
       margin-left: 1rem;
       margin-right: 0.5rem;
+    }
+
+    /* 画面表示時のみガイド枠を表示 */
+    @media screen {
+      #preview::before {
+        content: "";
+        display: block;
+        border: 1px dashed #ccc;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 180mm;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
     }
   </style>
 </head>
@@ -82,81 +108,9 @@
   <div id="preview"></div>
 
   <script>
-    const fileInput       = document.getElementById("fileInput");
-    const downloadBtn     = document.getElementById("download");
-    const preview         = document.getElementById("preview");
-    const dropZone        = document.getElementById("dropZone");
-    const markdownInput   = document.getElementById("markdownInput");
-    const fontSizeInput   = document.getElementById("fontSizeInput");
-    const fontFamilySelect = document.getElementById("fontFamilySelect");
-
-    let currentFilename = "document";
-
-    function applyStyles() {
-      const fontSize = `${fontSizeInput.value}px`;
-      const fontFamily = fontFamilySelect.value;
-      preview.style.fontSize = fontSize;
-      preview.style.fontFamily = fontFamily;
-    }
-
-    function renderMarkdown(mdText) {
-      preview.innerHTML = marked.parse(mdText);
-      downloadBtn.disabled = false;
-      applyStyles();
-    }
-
-    async function handleFile(file) {
-      if (!file || !file.name.match(/\.(md|markdown)$/i)) return;
-      currentFilename = file.name.replace(/\.[^/.]+$/, "");
-      const mdText = await file.text();
-      markdownInput.value = mdText;
-      renderMarkdown(mdText);
-    }
-
-    fileInput.addEventListener("change", (e) => {
-      handleFile(e.target.files[0]);
-    });
-
-    dropZone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dropZone.classList.add("dragover");
-    });
-
-    dropZone.addEventListener("dragleave", () => {
-      dropZone.classList.remove("dragover");
-    });
-
-    dropZone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropZone.classList.remove("dragover");
-      const file = e.dataTransfer.files[0];
-      handleFile(file);
-    });
-
-    markdownInput.addEventListener("input", () => {
-      currentFilename = "document";
-      renderMarkdown(markdownInput.value);
-    });
-
-    fontSizeInput.addEventListener("input", () => {
-      applyStyles();
-    });
-
-    fontFamilySelect.addEventListener("change", () => {
-      applyStyles();
-    });
-
-    downloadBtn.addEventListener("click", () => {
-      const options = {
-        margin:      5,
-        filename:    `${currentFilename}.pdf`,
-        image:       { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF:       { unit: "mm", format: "a4", orientation: "portrait" }
-      };
-      applyStyles();
-      html2pdf().from(preview).set(options).save();
-    });
-  </script>
-</body>
-</html>
+    const fileInput        = document.getElementById("fileInput");
+    const downloadBtn      = document.getElementById("download");
+    const preview          = document.getElementById("preview");
+    const dropZone         = document.getElementById("dropZone");
+    const markdownInput    = document.getElementById("markdownInput");
+    const fontSizeInput    = document.getElementById("fontS
