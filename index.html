@@ -30,7 +30,7 @@
       max-width: 180mm;
       box-sizing: border-box;
       margin: 1rem auto;
-      position: relative; /* ガイド表示に必要 */
+      position: relative;
     }
 
     #download {
@@ -66,7 +66,7 @@
       margin-right: 0.5rem;
     }
 
-    /* 画面表示時のみガイド枠を表示 */
+    /* プレビュー用 A4 ガイド（画面上のみ） */
     @media screen {
       #preview::before {
         content: "";
@@ -82,27 +82,48 @@
         z-index: 0;
       }
     }
-    /* テーブルの基本スタイル */
+
+    /* PDF出力用の調整：プレビュー枠を消す */
+    @media print {
+      #preview::before {
+        display: none;
+      }
+      #preview {
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+      }
+    }
+
+    /* テーブル装飾：グレースケール + ストライプ */
     #preview table {
       width: 100%;
       border-collapse: collapse;
       margin: 1em 0;
       font-size: 0.95em;
+      page-break-inside: avoid;
     }
-    /* ヘッダー行の背景と文字の色 */
+
     #preview thead tr {
-      background-color: #e0e0e0;  /* 薄いグレー */
+      background-color: #e0e0e0;
       color: #000;
     }
-    /* ヘッダーセルとデータセルの枠線とパディング */
+
     #preview th, #preview td {
       border: 1px solid #bbb;
       padding: 0.5em 0.75em;
       text-align: left;
     }
-    /* 偶数行だけ背景を変える（ストライプ効果） */
+
     #preview tbody tr:nth-child(even) {
-      background-color: #f5f5f5; /* さらに薄いグレー */
+      background-color: #f5f5f5;
+    }
+
+    /* 改ページ防止 */
+    #preview h1, #preview h2, #preview h3,
+    #preview p, #preview table, #preview ul, #preview ol, #preview blockquote {
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
   </style>
 </head>
@@ -192,7 +213,7 @@
     downloadBtn.addEventListener("click", () => {
       applyStyles(); // 念のため適用
       const options = {
-        margin:      5,
+        margin:      10,
         filename:    `${currentFilename}.pdf`,
         image:       { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2 },
