@@ -218,31 +218,33 @@
       applyStyles();
       preview.classList.add("no-guide");
 
-      html2pdf()
-        .from(preview)
-        .set({
-          margin: 5,
-          filename: `${currentFilename}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-        })
-        .toPdf()
-        .get('pdf')
-        .then(pdf => {
-          const totalPages = pdf.internal.getNumberOfPages();
-          for (let i = 1; i <= totalPages; i++) {
-            pdf.setPage(i);
-            pdf.setFontSize(8);
-            pdf.setTextColor(100);
-            pdf.text(`ページ ${i} / ${totalPages}`, 105, 290, { align: 'center' });
-          }
-        })
-        .save()
-        .finally(() => {
-          preview.classList.remove("no-guide");
-        });
+    html2pdf()
+      .from(preview)
+      .set({
+        margin: [10, 10, 10, 20], // 上, 右, 下, 左（下20mmでフッター余白）
+        filename: `${currentFilename}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+      })
+      .toPdf()
+      .get('pdf')
+      .then(pdf => {
+        const totalPages = pdf.internal.getNumberOfPages();
+        pdf.setFont("helvetica"); // ← フォント明示（文字化け対策）
+        for (let i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(9);
+          pdf.setTextColor(100);
+          pdf.text(`${i}`, 105, 287, { align: 'center' }); // ← ページ番号のみ表示、下からやや上
+        }
+      })
+      .save()
+      .finally(() => {
+        preview.classList.remove("no-guide");
+      });
     });
+    
   </script>
 </body>
 </html>
