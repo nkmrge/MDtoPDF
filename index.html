@@ -113,4 +113,71 @@
     const preview          = document.getElementById("preview");
     const dropZone         = document.getElementById("dropZone");
     const markdownInput    = document.getElementById("markdownInput");
-    const fontSizeInput    = document.getElementById("fontS
+    const fontSizeInput    = document.getElementById("fontSizeInput");
+    const fontFamilySelect = document.getElementById("fontFamilySelect");
+
+    let currentFilename = "document";
+
+    function applyStyles() {
+      const fontSize = `${fontSizeInput.value}px`;
+      const fontFamily = fontFamilySelect.value;
+      preview.style.fontSize = fontSize;
+      preview.style.fontFamily = fontFamily;
+    }
+
+    function renderMarkdown(mdText) {
+      preview.innerHTML = marked.parse(mdText);
+      downloadBtn.disabled = false;
+      applyStyles();
+    }
+
+    async function handleFile(file) {
+      if (!file || !file.name.match(/\.(md|markdown)$/i)) return;
+      currentFilename = file.name.replace(/\.[^/.]+$/, "");
+      const mdText = await file.text();
+      markdownInput.value = mdText;
+      renderMarkdown(mdText);
+    }
+
+    fileInput.addEventListener("change", (e) => {
+      handleFile(e.target.files[0]);
+    });
+
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      handleFile(file);
+    });
+
+    markdownInput.addEventListener("input", () => {
+      currentFilename = "document";
+      renderMarkdown(markdownInput.value);
+    });
+
+    fontSizeInput.addEventListener("input", applyStyles);
+    fontFamilySelect.addEventListener("change", applyStyles);
+
+    downloadBtn.addEventListener("click", () => {
+      applyStyles(); // 念のため適用
+      const options = {
+        margin:      5,
+        filename:    `${currentFilename}.pdf`,
+        image:       { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF:       { unit: "mm", format: "a4", orientation: "portrait" }
+      };
+      html2pdf().from(preview).set(options).save();
+    });
+  </script>
+</body>
+</html>
